@@ -8,6 +8,12 @@ use ZfcUser\Options\AuthenticationOptionsInterface;
 
 class ChangeEmail extends ProvidesEventsForm
 {
+    /**
+     *
+     * @var AuthenticationOptionsInterface
+     */
+    protected $authOptions;
+
     public function __construct($name = null, AuthenticationOptionsInterface $options)
     {
         $this->setAuthenticationOptions($options);
