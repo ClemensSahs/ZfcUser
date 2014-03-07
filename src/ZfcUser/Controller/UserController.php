@@ -213,21 +213,20 @@ class UserController extends AbstractActionController
             );
         }
 
-        if (!$service->getOptions()->getLoginAfterRegistration()) {
-            // TODO: Add the redirect parameter here...
-            return $this->redirect()->toUrl($this->url()->fromRoute(static::ROUTE_LOGIN)
-                 . ($redirect ? '?redirect='. rawurlencode($redirect) : ''));
+        if ($service->getOptions()->getLoginAfterRegistration()) {
+            $identityFields = $service->getOptions()->getAuthIdentityFields();
+            if (in_array('email', $identityFields)) {
+                $post['identity'] = $user->getEmail();
+            } elseif (in_array('username', $identityFields)) {
+                $post['identity'] = $user->getUsername();
+            }
+            $post['credential'] = $post['password'];
+            $request->setPost(new Parameters($post));
+            return $this->forward()->dispatch(static::CONTROLLER_NAME, array('action' => 'authenticate'));
         }
 
-        $identityFields = $service->getOptions()->getAuthIdentityFields();
-        if (in_array('email', $identityFields)) {
-            $post['identity'] = $user->getEmail();
-        } elseif (in_array('username', $identityFields)) {
-            $post['identity'] = $user->getUsername();
-        }
-        $post['credential'] = $post['password'];
-        $request->setPost(new Parameters($post));
-        return $this->forward()->dispatch(static::CONTROLLER_NAME, array('action' => 'authenticate'));
+        // TODO: Add the redirect parameter here...
+        return $this->redirect()->toUrl($this->url()->fromRoute(static::ROUTE_LOGIN) . ($redirect ? '?redirect='. rawurlencode($redirect) : ''));
     }
 
     /**
