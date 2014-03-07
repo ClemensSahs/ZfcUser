@@ -55,6 +55,16 @@ class UserController extends AbstractActionController
      */
     protected $options;
 
+
+    protected function getRedirect($optionControll=false)
+    {
+        if ( $optionControll && !$this->getOptions()->getUseRedirectParameterIfPresent() ) {
+            return false;
+        }
+
+        return $this->params()->fromPost('redirect', $this->params()->fromQuery('redirect', false));
+    }
+
     /**
      * User page
      */
@@ -78,11 +88,7 @@ class UserController extends AbstractActionController
         $request = $this->getRequest();
         $form    = $this->getLoginForm();
 
-        if ($this->getOptions()->getUseRedirectParameterIfPresent() && $request->getQuery()->get('redirect')) {
-            $redirect = $request->getQuery()->get('redirect');
-        } else {
-            $redirect = false;
-        }
+        $redirect = $this->getRedirect(true);
 
         if (!$request->isPost()) {
             return array(
@@ -115,9 +121,9 @@ class UserController extends AbstractActionController
         $this->zfcUserAuthentication()->getAuthAdapter()->logoutAdapters();
         $this->zfcUserAuthentication()->getAuthService()->clearIdentity();
 
-        $redirect = $this->params()->fromPost('redirect', $this->params()->fromQuery('redirect', false));
+        $redirect = $this->getRedirect(true);
 
-        if ($this->getOptions()->getUseRedirectParameterIfPresent() && $redirect) {
+        if ($redirect) {
             return $this->redirect()->toUrl($redirect);
         }
 
@@ -134,7 +140,7 @@ class UserController extends AbstractActionController
         }
 
         $adapter = $this->zfcUserAuthentication()->getAuthAdapter();
-        $redirect = $this->params()->fromPost('redirect', $this->params()->fromQuery('redirect', false));
+        $redirect = $this->getRedirect();
 
         $result = $adapter->prepareForAuthentication($this->getRequest());
 
@@ -173,16 +179,12 @@ class UserController extends AbstractActionController
         if (!$this->getOptions()->getEnableRegistration()) {
             return array('enableRegistration' => false);
         }
-        
+
         $request = $this->getRequest();
         $service = $this->getUserService();
         $form = $this->getRegisterForm();
 
-        if ($this->getOptions()->getUseRedirectParameterIfPresent() && $request->getQuery()->get('redirect')) {
-            $redirect = $request->getQuery()->get('redirect');
-        } else {
-            $redirect = false;
-        }
+        $redirect = $this->getRedirect(true);
 
         $redirectUrl = $this->url()->fromRoute(static::ROUTE_REGISTER)
             . ($redirect ? '?redirect=' . rawurlencode($redirect) : '');
