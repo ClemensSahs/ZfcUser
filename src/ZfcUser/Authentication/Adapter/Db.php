@@ -105,7 +105,7 @@ class Db extends AbstractAdapter implements ServiceManagerAwareInterface
         $session->getManager()->regenerateId();
 
         // Success!
-        $e->setIdentityEntity($userObject);
+        $e->setEntity($userObject);
         $e->setIdentity($userObject->getId());
         // Update user's password hash if the cost parameter has changed
         $this->updateUserPasswordHash($userObject, $credential, $bcrypt);

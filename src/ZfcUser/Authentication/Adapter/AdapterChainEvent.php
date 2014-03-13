@@ -12,9 +12,9 @@ class AdapterChainEvent extends Event
      *
      * @return mixed
      */
-    public function getIdentityEntity()
+    public function getEntity()
     {
-        return $this->getParam('identityEntity');
+        return $this->getParam('entity');
     }
 
     /**
@@ -23,14 +23,14 @@ class AdapterChainEvent extends Event
      * @param mixed $identityEntity
      * @return AdapterChainEvent
      */
-    public function setIdentityEntity($identityEntity = null)
+    public function setEntity($entity = null)
     {
-        if (null === $identityEntity) {
+        if (null === $entity) {
             // Setting the identity to null resets the code and messages.
             $this->setCode();
             $this->setMessages();
         }
-        $this->setParam('identityEntity', $identityEntity);
+        $this->setParam('entity', $entity);
         return $this;
     }
 
