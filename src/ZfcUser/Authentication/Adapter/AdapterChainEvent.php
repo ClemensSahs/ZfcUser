@@ -8,6 +8,33 @@ use Zend\Stdlib\RequestInterface as Request;
 class AdapterChainEvent extends Event
 {
     /**
+     * getIdentityEntity
+     *
+     * @return mixed
+     */
+    public function getIdentityEntity()
+    {
+        return $this->getParam('identityEntity');
+    }
+
+    /**
+     * setIdentityEntity
+     *
+     * @param mixed $identityEntity
+     * @return AdapterChainEvent
+     */
+    public function setIdentityEntity($identityEntity = null)
+    {
+        if (null === $identityEntity) {
+            // Setting the identity to null resets the code and messages.
+            $this->setCode();
+            $this->setMessages();
+        }
+        $this->setParam('identityEntity', $identityEntity);
+        return $this;
+    }
+
+    /**
      * getIdentity
      *
      * @return mixed

@@ -43,7 +43,7 @@ class Db extends AbstractAdapter implements ServiceManagerAwareInterface
         $session = new SessionContainer($this->getStorage()->getNameSpace());
         $session->getManager()->destroy();
     }
-    
+
     public function authenticate(AuthEvent $e)
     {
         if ($this->isSatisfied()) {
@@ -105,6 +105,7 @@ class Db extends AbstractAdapter implements ServiceManagerAwareInterface
         $session->getManager()->regenerateId();
 
         // Success!
+        $e->setIdentityEntity($userObject);
         $e->setIdentity($userObject->getId());
         // Update user's password hash if the cost parameter has changed
         $this->updateUserPasswordHash($userObject, $credential, $bcrypt);
