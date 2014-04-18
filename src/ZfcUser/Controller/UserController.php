@@ -78,11 +78,7 @@ class UserController extends AbstractActionController
         $request = $this->getRequest();
         $form    = $this->getLoginForm();
 
-        if ($this->getOptions()->getUseRedirectParameterIfPresent() && $request->getQuery()->get('redirect')) {
-            $redirect = $request->getQuery()->get('redirect');
-        } else {
-            $redirect = false;
-        }
+        $redirect = $this->getRedirectUrl(false, true);
 
         if (!$request->isPost()) {
             return array(
@@ -115,9 +111,8 @@ class UserController extends AbstractActionController
         $this->zfcUserAuthentication()->getAuthAdapter()->logoutAdapters();
         $this->zfcUserAuthentication()->getAuthService()->clearIdentity();
 
-        $redirect = $this->params()->fromPost('redirect', $this->params()->fromQuery('redirect', false));
-
-        if ($this->getOptions()->getUseRedirectParameterIfPresent() && $redirect) {
+        $redirect = $this->getRedirectUrl();
+        if ($redirect) {
             return $this->redirect()->toUrl($redirect);
         }
 
@@ -134,6 +129,7 @@ class UserController extends AbstractActionController
         }
 
         $adapter = $this->zfcUserAuthentication()->getAuthAdapter();
+
         $redirect = $this->params()->fromPost('redirect', $this->params()->fromQuery('redirect', false));
 
         $result = $adapter->prepareForAuthentication($this->getRequest());
@@ -180,14 +176,10 @@ class UserController extends AbstractActionController
         $service = $this->getUserService();
         $form = $this->getRegisterForm();
 
-        if ($this->getOptions()->getUseRedirectParameterIfPresent() && $request->getQuery()->get('redirect')) {
-            $redirect = $request->getQuery()->get('redirect');
-        } else {
-            $redirect = false;
-        }
+        $redirect = $this->getRedirectUrl(false, true);
+        $redirectQuery = $redirect ? '?redirect=' . rawurlencode($redirect) : '';
 
-        $redirectUrl = $this->url()->fromRoute(static::ROUTE_REGISTER)
-            . ($redirect ? '?redirect=' . rawurlencode($redirect) : '');
+        $redirectUrl = $this->url()->fromRoute(static::ROUTE_REGISTER) . $redirectQuery;
         $prg = $this->prg($redirectUrl, true);
 
         if ($prg instanceof Response) {
@@ -204,6 +196,7 @@ class UserController extends AbstractActionController
         $user = $service->register($post);
 
         $redirect = isset($prg['redirect']) ? $prg['redirect'] : null;
+        $redirectQuery = $redirect ? '?redirect=' . rawurlencode($redirect) : '';
 
         if (!$user) {
             return array(
@@ -226,7 +219,7 @@ class UserController extends AbstractActionController
         }
 
         // TODO: Add the redirect parameter here...
-        return $this->redirect()->toUrl($this->url()->fromRoute(static::ROUTE_LOGIN) . ($redirect ? '?redirect='. rawurlencode($redirect) : ''));
+        return $this->redirect()->toUrl($this->url()->fromRoute(static::ROUTE_LOGIN) . ($redirectQuery));
     }
 
     /**
@@ -443,5 +436,23 @@ class UserController extends AbstractActionController
     {
         $this->changeEmailForm = $changeEmailForm;
         return $this;
+    }
+
+    public function getRedirectUrl ($post = true, $query = true, $default = false)
+    {
+        if (!$this->getOptions()->getUseRedirectParameterIfPresent()) {
+            return false;
+        }
+        $request = $this->getRequest();
+
+        if ($query && $post) {
+            return $request->getPost()->get('redirect', $default) ?: $request->getQuery()->get('redirect', $default);
+        } elseif ($post) {
+            return $request->getPost()->get('redirect', $default);
+        } elseif ($query) {
+            return $request->getQuery()->get('redirect', $default);
+        }
+
+        return false;
     }
 }

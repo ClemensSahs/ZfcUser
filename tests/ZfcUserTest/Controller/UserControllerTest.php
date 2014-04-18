@@ -361,22 +361,8 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase
             'getAuthService'=>$service
         ));
 
-
-        $params = $this->getMock('\Zend\Mvc\Controller\Plugin\Params');
-        $params->expects($this->any())
-               ->method('__invoke')
-               ->will($this->returnSelf());
-        $params->expects($this->once())
-               ->method('fromPost')
-               ->will($this->returnCallback(function ($key, $default) use ($post) {
-                   return $post ?: $default;
-               }));
-        $params->expects($this->once())
-               ->method('fromQuery')
-               ->will($this->returnCallback(function ($key, $default) use ($query) {
-                   return $query ?: $default;
-               }));
-        $this->pluginManagerPlugins['params'] = $params;
+        $request = $this->helperMockRedirectUrl($post, $query);
+        $this->helperMakePropertyAccessable($controller, 'request', $request);
 
         $response = new Response();
 
@@ -423,6 +409,9 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase
         $response = new Response();
         $hasRedirect = !(is_null($query) && is_null($post));
 
+        /**
+         * @todo replace parms plugin with internal methode (with option check)
+         */
         $params = $this->getMock('\Zend\Mvc\Controller\Plugin\Params');
         $params->expects($this->any())
                ->method('__invoke')
@@ -597,12 +586,7 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase
                       ->will($this->returnValue((bool) $wantRedirect));
 
         if ($wantRedirect) {
-            $params = new Parameters();
-            $params->set('redirect', $redirectUrl);
-
-            $request->expects($this->any())
-                    ->method('getQuery')
-                    ->will($this->returnValue($params));
+            $this->helperMockRedirectUrl(false, $redirectUrl, $request);
         }
 
 
@@ -1259,5 +1243,32 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase
         return (array_key_exists($key, $this->pluginManagerPlugins))
             ? $this->pluginManagerPlugins[$key]
             : null;
+    }
+
+    public function helperMockRedirectUrl($byPost = false, $byQuery = false, $requestObject = null)
+    {
+        if (!$requestObject) {
+            $requestObject = $this->getMock('Zend\Http\Request');
+        }
+
+        $postParams = new \Zend\Stdlib\Parameters();
+        $requestObject->expects($this->any())
+                      ->method('getPost')
+                      ->will($this->returnValue($postParams));
+
+        $queryParams = new \Zend\Stdlib\Parameters();
+        $requestObject->expects($this->any())
+                      ->method('getQuery')
+                      ->will($this->returnValue($queryParams));
+
+
+        if ($byPost) {
+            $postParams->set('redirect', $byPost);
+        }
+        if ($byQuery) {
+            $queryParams->set('redirect', $byQuery);
+        }
+
+        return $requestObject;
     }
 }
