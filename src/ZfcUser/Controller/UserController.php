@@ -195,8 +195,13 @@ class UserController extends AbstractActionController
         $post = $prg;
         $user = $service->register($post);
 
-        $redirect = isset($prg['redirect']) ? $prg['redirect'] : null;
-        $redirectQuery = $redirect ? '?redirect=' . rawurlencode($redirect) : '';
+        $redirect = null;
+        $redirectQuery = '';
+
+        if (isset($prg['redirect'])) {
+            $redirect = $prg['redirect'];
+            $redirectQuery = '?redirect=' . rawurlencode($redirect);
+        }
 
         if (!$user) {
             return array(
@@ -219,7 +224,7 @@ class UserController extends AbstractActionController
         }
 
         // TODO: Add the redirect parameter here...
-        return $this->redirect()->toUrl($this->url()->fromRoute(static::ROUTE_LOGIN) . ($redirectQuery));
+        return $this->redirect()->toUrl($this->url()->fromRoute(static::ROUTE_LOGIN) . $redirectQuery);
     }
 
     /**
@@ -438,6 +443,14 @@ class UserController extends AbstractActionController
         return $this;
     }
 
+    /**
+     * check option getUseRedirectParameterIfPresent
+     *
+     * @param bool $post
+     * @param bool $query
+     * @param mixed $default
+     * @return boolean
+     */
     public function getRedirectUrl ($post = true, $query = true, $default = false)
     {
         if (!$this->getOptions()->getUseRedirectParameterIfPresent()) {

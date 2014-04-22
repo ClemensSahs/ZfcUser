@@ -1261,7 +1261,6 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase
                       ->method('getQuery')
                       ->will($this->returnValue($queryParams));
 
-
         if ($byPost) {
             $postParams->set('redirect', $byPost);
         }
