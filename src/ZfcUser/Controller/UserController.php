@@ -449,7 +449,7 @@ class UserController extends AbstractActionController
      * @param bool $post
      * @param bool $query
      * @param mixed $default
-     * @return boolean
+     * @return mixed
      */
     public function getRedirectUrl ($post = true, $query = true, $default = false)
     {
