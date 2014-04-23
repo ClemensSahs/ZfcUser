@@ -213,16 +213,9 @@ class UserController extends AbstractActionController
             );
         }
 
-        if ($service->getOptions()->getLoginAfterRegistration()) {
-            $identityFields = $service->getOptions()->getAuthIdentityFields();
-            if (in_array('email', $identityFields)) {
-                $post['identity'] = $user->getEmail();
-            } elseif (in_array('username', $identityFields)) {
-                $post['identity'] = $user->getUsername();
-            }
-            $post['credential'] = $post['password'];
-            $request->setPost(new Parameters($post));
-            return $this->forward()->dispatch(static::CONTROLLER_NAME, array('action' => 'authenticate'));
+        $dispatchResult = $this->dispatchLoginAfterRegistration($user, $post);
+        if ($dispatchResult !== false) {
+            return $dispatchResult;
         }
 
         // TODO: Add the redirect parameter here...
@@ -471,5 +464,24 @@ class UserController extends AbstractActionController
         }
 
         return null;
+    }
+
+    public function dispatchLoginAfterRegistration($user, $post)
+    {
+        $request = $this->getRequest();
+        $service = $this->getUserService();
+        if (!$service->getOptions()->getLoginAfterRegistration()) {
+            return false;
+        }
+
+        $identityFields = $service->getOptions()->getAuthIdentityFields();
+        if (in_array('email', $identityFields)) {
+            $post['identity'] = $user->getEmail();
+        } elseif (in_array('username', $identityFields)) {
+            $post['identity'] = $user->getUsername();
+        }
+        $post['credential'] = $post['password'];
+        $request->setPost(new Parameters($post));
+        return $this->forward()->dispatch(static::CONTROLLER_NAME, array('action' => 'authenticate'));
     }
 }
