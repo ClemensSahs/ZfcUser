@@ -71,8 +71,10 @@ class UserController extends AbstractActionController
      */
     public function loginAction()
     {
-        if ($this->zfcUserAuthentication()->hasIdentity()) {
-            return $this->redirect()->toRoute($this->getOptions()->getLoginRedirectRoute());
+        $accessResult = $this->hasAccess(false);
+
+        if ($accessResult !== true) {
+            return $accessResult;
         }
 
         /** @var $request \Zend\Http\Request */
@@ -125,8 +127,10 @@ class UserController extends AbstractActionController
      */
     public function authenticateAction()
     {
-        if ($this->zfcUserAuthentication()->hasIdentity()) {
-            return $this->redirect()->toRoute($this->getOptions()->getLoginRedirectRoute());
+        $accessResult = $this->hasAccess(false);
+
+        if ($accessResult !== true) {
+            return $accessResult;
         }
 
         $adapter = $this->zfcUserAuthentication()->getAuthAdapter();
@@ -163,14 +167,10 @@ class UserController extends AbstractActionController
      */
     public function registerAction()
     {
-        // if the user is logged in, we don't need to register
-        if ($this->zfcUserAuthentication()->hasIdentity()) {
-            // redirect to the login redirect route
-            return $this->redirect()->toRoute($this->getOptions()->getLoginRedirectRoute());
-        }
-        // if registration is disabled
-        if (!$this->getOptions()->getEnableRegistration()) {
-            return array('enableRegistration' => false);
+        $accessResult = $this->hasAccess(false,'enableRegistration');
+
+        if ($accessResult !== true) {
+            return $accessResult;
         }
 
         $service = $this->getUserService();
@@ -225,10 +225,10 @@ class UserController extends AbstractActionController
      */
     public function changepasswordAction()
     {
-        // if the user isn't logged in, we can't change password
-        if (!$this->zfcUserAuthentication()->hasIdentity()) {
-            // redirect to the login redirect route
-            return $this->redirect()->toRoute($this->getOptions()->getLoginRedirectRoute());
+        $accessResult = $this->hasAccess(true);
+
+        if ($accessResult !== true) {
+            return $accessResult;
         }
 
         $form = $this->getChangePasswordForm();
@@ -267,10 +267,10 @@ class UserController extends AbstractActionController
 
     public function changeEmailAction()
     {
-        // if the user isn't logged in, we can't change email
-        if (!$this->zfcUserAuthentication()->hasIdentity()) {
-            // redirect to the login redirect route
-            return $this->redirect()->toRoute($this->getOptions()->getLoginRedirectRoute());
+        $accessResult = $this->hasAccess(true);
+
+        if ($accessResult !== true) {
+            return $accessResult;
         }
 
         $form = $this->getChangeEmailForm();
@@ -482,5 +482,25 @@ class UserController extends AbstractActionController
         $post['credential'] = $post['password'];
         $request->setPost(new Parameters($post));
         return $this->forward()->dispatch(static::CONTROLLER_NAME, array('action' => 'authenticate'));
+    }
+
+    public function hasAccess($identityMustBe = true, $access = null)
+    {
+        // if the user is logged in, we don't need to register
+        if ($this->zfcUserAuthentication()->hasIdentity() !== $identityMustBe) {
+            // redirect to the login redirect route
+            return $this->redirect()->toRoute($this->getOptions()->getLoginRedirectRoute());
+        }
+
+        switch ($access) {
+            case "enableRegistration":
+                // if registration is disabled
+                if (!$this->getOptions()->getEnableRegistration()) {
+                    return array('enableRegistration' => false);
+                }
+                break;
+        }
+
+        return true;
     }
 }
