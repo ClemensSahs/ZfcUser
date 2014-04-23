@@ -243,12 +243,7 @@ class UserController extends AbstractActionController
         $form = $this->getChangePasswordForm();
         $prg = $this->prg(static::ROUTE_CHANGEPASSWD);
 
-        $fm = $this->flashMessenger()->setNamespace('change-password')->getMessages();
-        if (isset($fm[0])) {
-            $status = $fm[0];
-        } else {
-            $status = null;
-        }
+        $status = $this->getStatusByFlashMessager('change-password');
 
         if ($prg instanceof Response) {
             return $prg;
@@ -292,12 +287,7 @@ class UserController extends AbstractActionController
         $request = $this->getRequest();
         $request->getPost()->set('identity', $this->getUserService()->getAuthService()->getIdentity()->getEmail());
 
-        $fm = $this->flashMessenger()->setNamespace('change-email')->getMessages();
-        if (isset($fm[0])) {
-            $status = $fm[0];
-        } else {
-            $status = null;
-        }
+        $status = $this->getStatusByFlashMessager('change-email');
 
         $prg = $this->prg(static::ROUTE_CHANGEEMAIL);
         if ($prg instanceof Response) {
@@ -471,5 +461,15 @@ class UserController extends AbstractActionController
         }
 
         return false;
+    }
+
+    public function getStatusByFlashMessager($namespace)
+    {
+        $fm = $this->flashMessenger()->setNamespace($namespace)->getMessages();
+        if (isset($fm[0])) {
+            return $fm[0];
+        }
+
+        return null;
     }
 }
