@@ -75,6 +75,7 @@ class UserController extends AbstractActionController
             return $this->redirect()->toRoute($this->getOptions()->getLoginRedirectRoute());
         }
 
+        /** @var $request \Zend\Http\Request */
         $request = $this->getRequest();
         $form    = $this->getLoginForm();
 
@@ -172,6 +173,7 @@ class UserController extends AbstractActionController
             return array('enableRegistration' => false);
         }
 
+        /** @var $request \Zend\Http\Request */
         $request = $this->getRequest();
         $service = $this->getUserService();
         $form = $this->getRegisterForm();
@@ -286,6 +288,7 @@ class UserController extends AbstractActionController
         }
 
         $form = $this->getChangeEmailForm();
+        /** @var $request \Zend\Http\Request */
         $request = $this->getRequest();
         $request->getPost()->set('identity', $this->getUserService()->getAuthService()->getIdentity()->getEmail());
 
@@ -456,6 +459,7 @@ class UserController extends AbstractActionController
         if (!$this->getOptions()->getUseRedirectParameterIfPresent()) {
             return false;
         }
+        /** @var $request \Zend\Http\Request */
         $request = $this->getRequest();
 
         if ($query && $post) {
