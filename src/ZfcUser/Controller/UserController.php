@@ -173,8 +173,6 @@ class UserController extends AbstractActionController
             return array('enableRegistration' => false);
         }
 
-        /** @var $request \Zend\Http\Request */
-        $request = $this->getRequest();
         $service = $this->getUserService();
         $form = $this->getRegisterForm();
 
@@ -468,6 +466,7 @@ class UserController extends AbstractActionController
 
     public function dispatchLoginAfterRegistration($user, $post)
     {
+        /** @var $request \Zend\Http\Request */
         $request = $this->getRequest();
         $service = $this->getUserService();
         if (!$service->getOptions()->getLoginAfterRegistration()) {
