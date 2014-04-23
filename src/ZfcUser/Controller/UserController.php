@@ -167,7 +167,7 @@ class UserController extends AbstractActionController
      */
     public function registerAction()
     {
-        $accessResult = $this->hasAccess(false,'enableRegistration');
+        $accessResult = $this->hasAccess(false, 'enableRegistration');
 
         if ($accessResult !== true) {
             return $accessResult;
